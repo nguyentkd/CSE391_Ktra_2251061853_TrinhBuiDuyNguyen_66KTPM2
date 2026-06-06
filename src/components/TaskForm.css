@@ -121,3 +121,29 @@
   background: #f8fafc;
   border-color: #cbd5e1;
 }
+
+/* Câu 2: Character count styling */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrapper input {
+  flex: 1;
+  padding-right: 50px;
+}
+
+.char-count {
+  position: absolute;
+  right: 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+.char-count.warning {
+  color: #ef4444;
+  font-weight: 700;
+}

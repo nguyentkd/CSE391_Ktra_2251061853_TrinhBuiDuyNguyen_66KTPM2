@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react';
+import { validateFormInput } from '../utils/validateTask';
 import './TaskForm.css';
+
+/**
+ * TaskForm Component - Câu 2: Kiểm tra và validate dữ liệu input
+ * - Validate độ dài title (3-100 ký tự)
+ * - Validate priority hợp lệ
+ * - Hiển thị error message chi tiết
+ */
 
 const PRIORITY_OPTIONS = ['High', 'Medium', 'Low'];
 
@@ -7,27 +15,36 @@ function TaskForm({ onAdd, onUpdate, editingTask, onCancelEdit }) {
   const [title, setTitle] = useState('');
   const [priority, setPriority] = useState('High');
   const [error, setError] = useState('');
+  const [charCount, setCharCount] = useState(0);
 
   useEffect(() => {
     if (editingTask) {
       setTitle(editingTask.title);
       setPriority(editingTask.priority);
       setError('');
+      setCharCount(editingTask.title.length);
     }
   }, [editingTask]);
 
+  // Update character count when title changes
+  const handleTitleChange = (e) => {
+    const value = e.target.value;
+    setTitle(value);
+    setCharCount(value.length);
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    const trimmed = title.trim();
 
-    if (!trimmed) {
-      setError('Vui lòng nhập tên task.');
+    // Sử dụng hàm validate từ utils (Câu 2)
+    const validation = validateFormInput(title, priority);
+
+    if (!validation.isValid) {
+      setError(validation.error);
       return;
     }
-    if (trimmed.length > 100) {
-      setError('Tên Task không được quá 100 kí tự.');
-      return;
-    }
+
+    const trimmed = title.trim();
 
     if (editingTask) {
       onUpdate({ ...editingTask, title: trimmed, priority });
@@ -35,6 +52,7 @@ function TaskForm({ onAdd, onUpdate, editingTask, onCancelEdit }) {
       onAdd(trimmed, priority);
       setTitle('');
       setPriority('High');
+      setCharCount(0);
     }
     setError('');
   };
@@ -46,13 +64,19 @@ function TaskForm({ onAdd, onUpdate, editingTask, onCancelEdit }) {
       </div>
       <form className="task-form" onSubmit={handleSubmit}>
         <label htmlFor="task-input">Task</label>
-        <input
-          id="task-input"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Type your task here..."
-          maxLength={120}
-        />
+        <div className="input-wrapper">
+          <input
+            id="task-input"
+            value={title}
+            onChange={handleTitleChange}
+            placeholder="Type your task here..."
+            maxLength={120}
+          />
+          <span className={`char-count ${charCount > 100 ? 'warning' : ''}`}>
+            {charCount}/100
+          </span>
+        </div>
+
         <label>Priority</label>
         <div className="priority-buttons">
           {PRIORITY_OPTIONS.map((option) => (
@@ -66,7 +90,9 @@ function TaskForm({ onAdd, onUpdate, editingTask, onCancelEdit }) {
             </button>
           ))}
         </div>
+
         {error && <div className="task-form-error">{error}</div>}
+
         <div className="form-buttons">
           <button type="submit" className="submit-btn">
             {editingTask ? 'Lưu' : 'Add'}
